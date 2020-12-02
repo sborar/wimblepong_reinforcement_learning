@@ -35,19 +35,24 @@ episodes = 2000000
 
 # Define the player IDs for both SimpleAI agents
 player_id = 1
-opponent1_id = 3 - player_id
-opponent1 = Agent(env, opponent_id)
+opponent1_id = 2
+opponent2_id = 3
+simple_opponent = wimblepong.SimpleAi(env, opponent1_id)
+complex_opponent = Agent(env, opponent2_id)
 
 player = Agent(env, player_id)
 
 
-
-# Set the names for both SimpleAIs
-env.set_names('player1', 'player2')
+#
+# # Set the names for both SimpleAIs
+# env.set_names('player1', 'player2')
 
 #load model
-player.load_model('train_weights/0.954_winrate_at_90000_episodes_title.pth')
-opponent.load_model('train_weights_bn_coef/0.890_finetune.pth')
+player.load_model('train_weights_bn_coef/0.890_finetune.pth')
+complex_opponent.load_model('train_weights/0.954_winrate_at_90000_episodes_title.pth')
+player.name = 'learner'
+complex_opponent.name = 'complex_teacher'
+simple_opponent.name = 'simple_teacher'
 
 print("Cuda:", torch.cuda.is_available())
 print("Training")
@@ -71,6 +76,8 @@ state_value_plotting = []
 entropy_plotting = []
 action_prob_plotting = []
 
+opponent = simple_opponent
+
 for episode_number in range(episodes):
     timesteps = 0
     done = False
@@ -79,11 +86,17 @@ for episode_number in range(episodes):
     observation1 = observation_t[1]
     action_dist = [0,0,0]
 
+    if episode_number != 0 and episode_number % 10 == 0:
+        if opponent == simple_opponent:
+            opponent = complex_opponent
+        else:
+            opponent = simple_opponent
+
     while not done:
         frames_seen += 1
 
         action, action_prob, entropy, state_value = player.get_action_train(observation)
-        action1, action_prob1, entropy1, state_value1 = opponent.get_action_train(observation1)
+        action1 = opponent.get_action(observation1)
         # env.render()
 
         running_state_values.pop(0)
@@ -97,7 +110,7 @@ for episode_number in range(episodes):
 
         action_dist[action] += 1
 
-        (observation, observation1), (reward, reward1), done, info = env.step((action.detach(), action1.detach()))
+        (observation, observation1), (reward, reward1), done, info = env.step((action.detach(), action1))
 
         if reward == 10:
             wins += 1
@@ -135,7 +148,7 @@ for episode_number in range(episodes):
         highest_running_winrate = run_avg
         torch.save(player.policy.state_dict(), "./train_weights/"+str(highest_running_winrate)+"_winrate"+run_title+".pth")
 
-    # player.episode_finished(episode_number)
+    player.episode_finished(episode_number)
     player.reset()
 
 

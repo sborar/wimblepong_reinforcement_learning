@@ -99,7 +99,7 @@ class Agent(object):
         self.entropy_coef=1e-2
         self.env = env
         self.player_id = player_id
-        self.name = ''
+        self.name = 'bn'
     
     def get_action_train(self, observation):
         x = self.preprocess(observation).to(self.device)
@@ -111,7 +111,7 @@ class Agent(object):
     def get_action(self, observation): 
         x = self.preprocess(observation).to(self.device)
         dist, _, _ = self.policy(x)
-        return torch.argmax(dist.probs)
+        return torch.argmax(dist.probs).item()
 
     def reset(self):
         self.previous_frame = None
