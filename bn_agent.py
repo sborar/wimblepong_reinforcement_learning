@@ -89,7 +89,7 @@ class Agent(object):
         self.policy = Policy().to(self.device)
         self.previous_frame = None
         self.gamma = 0.9
-        self.optimizer = torch.optim.RMSprop(self.policy.parameters(), lr=0.001, eps=1e-5, alpha=0.99)
+        self.optimizer = torch.optim.RMSprop(self.policy.parameters(), lr=0.0001, eps=1e-5, alpha=0.99)
         self.state_values = []
         self.rewards = []
         self.action_probs = []
