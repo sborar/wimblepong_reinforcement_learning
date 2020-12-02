@@ -50,9 +50,6 @@ player = Agent(env, player_id)
 #load model
 player.load_model('train_weights_bn_coef/0.890_finetune.pth')
 complex_opponent.load_model('train_weights/0.954_winrate_at_90000_episodes_title.pth')
-player.name = 'learner'
-complex_opponent.name = 'complex_teacher'
-simple_opponent.name = 'simple_teacher'
 
 print("Cuda:", torch.cuda.is_available())
 print("Training")
@@ -176,5 +173,5 @@ for episode_number in range(episodes):
         df5 = pd.DataFrame(action_prob_plotting)
         df5.to_csv("./plot_data/"+run_title+str(episode_number)+"_action_prob_plotting.csv")
 
-    print("("+run_title+") Episode over:",str(episode_number),"WR:",str(wins/(episode_number+1)),"wins:", wins, "steps", str(timesteps) ,"frames seen:", frames_seen, "action dist", action_dist, "highest winrate", highest_running_winrate, "current winrate:", run_avg)
+    print("("+run_title+") Episode over:",str(episode_number),"WR:",str(wins/(episode_number+1)),"wins:", wins, "steps", str(timesteps) ,"frames seen:", frames_seen, "action dist", action_dist, "highest winrate", highest_running_winrate, "current winrate:", run_avg, opponent.name)
 torch.save(player.policy.state_dict(), "./train_weights/"+str(highest_running_winrate)+"_winrate_at_end_"+run_title+"_.pth")
