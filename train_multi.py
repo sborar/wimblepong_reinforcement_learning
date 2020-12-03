@@ -1,78 +1,60 @@
-"""
-This is an example on how to use the two player Wimblepong environment
-with two SimpleAIs playing against each other
-"""
-import matplotlib.pyplot as plt
-from random import randint
-import pickle
-import gym
-from bn_agent import Agent
 import argparse
-import wimblepong
-from PIL import Image
-import wimblepong
 import gym
-from bn_agent import Agent
-import argparse
-import torch
-import matplotlib.pyplot as plt
-import matplotlib
 import numpy as np
 import pandas as pd
+import torch
+import wimblepong
+from agent import Agent
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--headless", action="store_true", help="Run in headless mode")
 parser.add_argument("--fps", type=int, help="FPS for rendering", default=30)
 parser.add_argument("--scale", type=int, help="Scale of the rendered game", default=1)
+parser.add_argument("--load_model_path", type=str, help="Path to load an existing model for player")
+parser.add_argument("--load_model_path_opponent", type=str, help="Path to load an existing model for opponent")
 args = parser.parse_args()
 
 # Make the environment
 env = gym.make("WimblepongVisualMultiplayer-v0")
 env.unwrapped.scale = args.scale
 env.unwrapped.fps = args.fps
-# Number of episodes/games to play
-episodes = 2000000
 
-# Define the player IDs for both SimpleAI agents
+# check if gpu is available
+print("Cuda:", torch.cuda.is_available())
+print("Start Training")
+
+# saving folders
+model_path = "./train_weights/"
+plot_data_path = "./plot_data/"
+
+# Define players and opponents
 player_id = 1
 opponent1_id = 2
 opponent2_id = 3
+
+player = Agent()
 simple_opponent = wimblepong.SimpleAi(env, opponent1_id)
-complex_opponent = Agent(env, opponent2_id)
+complex_opponent = Agent()
 
-player = Agent(env, player_id)
+# load existing model for player
+if args.load_model_path:
+    player.load_model(path=args.load_model_path)
 
+# load existing model for complex opponent
+if args.load_model_path_opponent:
+    complex_opponent.load_model(path=args.load_model_path_opponent)
 
-#
-# # Set the names for both SimpleAIs
-# env.set_names('player1', 'player2')
-
-#load model
-player.load_model('train_weights_bn_coef/0.890_finetune.pth')
-complex_opponent.load_model('train_weights/0.954_winrate_at_90000_episodes_title.pth')
-
-print("Cuda:", torch.cuda.is_available())
-print("Training")
-
-run_title = "title"
+# initialize variables
+episodes = 2000000
 wins = 0
 frames_seen = 0
-scores = [0 for _ in range(1000)]
-game_lengths = [0 for _ in range(1000)]
-running_state_values = [0 for _ in range(10000)]
-running_entropies = [0 for _ in range(10000)]
-running_action_probs = [0 for _ in range(10000)]
-
+scores = [0 for _ in range(100)]
 highest_running_winrate = 0
 save_every = 10000
-total_timesteps = 0
 
-perf_plotting = []
-game_length_plotting = []
-state_value_plotting = []
-entropy_plotting = []
-action_prob_plotting = []
+win_rates = []
 
+# set first opponent
 opponent = simple_opponent
 
 for episode_number in range(episodes):
@@ -81,8 +63,8 @@ for episode_number in range(episodes):
     observation_t = env.reset()
     observation = observation_t[0]
     observation1 = observation_t[1]
-    action_dist = [0,0,0]
 
+    # toggle opponent after every 10 episodes
     if episode_number != 0 and episode_number % 10 == 0:
         if opponent == simple_opponent:
             opponent = complex_opponent
@@ -90,22 +72,9 @@ for episode_number in range(episodes):
             opponent = simple_opponent
 
     while not done:
-        frames_seen += 1
 
         action, action_prob, entropy, state_value = player.get_action_train(observation)
         action1 = opponent.get_action(observation1)
-        # env.render()
-
-        running_state_values.pop(0)
-        running_state_values.append(state_value.item())
-
-        running_entropies.pop(0)
-        running_entropies.append(entropy.item())
-
-        running_action_probs.pop(0)
-        running_action_probs.append(action_prob.item())
-
-        action_dist[action] += 1
 
         (observation, observation1), (reward, reward1), done, info = env.step((action.detach(), action1))
 
@@ -114,13 +83,9 @@ for episode_number in range(episodes):
 
         player.store_outcome(state_value, reward, action_prob, entropy)
 
-        # Store total episode reward
+        # Housekeeping
         timesteps += 1
-        # total_timesteps += 1
-        #
-        # if total_timesteps % 50==0:
-        #     player.episode_finished(episode_number)
-
+        frames_seen += 1
 
         if not args.headless:
             env.render()
@@ -132,46 +97,26 @@ for episode_number in range(episodes):
         scores.append(0)
         scores.pop(0)
 
-    game_lengths.pop(0)
-    game_lengths.append(timesteps)
-
-    run_avg = np.mean(np.array(scores))
-    game_length_avg = np.mean(np.array(game_lengths))
-    state_value_avg = np.mean(np.array(running_state_values))
-    entropy_avg = np.mean(np.array(running_entropies))
-    action_prob_avg = np.mean(np.array(running_action_probs))
-
-    if  (run_avg - 0.01)  > highest_running_winrate:
-        highest_running_winrate = run_avg
-        torch.save(player.policy.state_dict(), "./train_weights/"+str(highest_running_winrate)+"_winrate"+run_title+".pth")
-
+    # update policy
     player.episode_finished(episode_number)
     player.reset()
 
+    # print and save things
+    avg_win_rate_100_eps = np.mean(np.array(scores))
 
-    perf_plotting.append((episode_number,run_avg))
-    game_length_plotting.append((episode_number,game_length_avg))
-    state_value_plotting.append((episode_number,state_value_avg))
-    entropy_plotting.append((episode_number,entropy_avg))
-    action_prob_plotting.append((episode_number, action_prob_avg))
+    if (avg_win_rate_100_eps - 0.01) > highest_running_winrate:
+        highest_running_winrate = avg_win_rate_100_eps
+        player.save_model(model_path + str(highest_running_winrate) + "_winrate.mdl")
 
-    if episode_number  % save_every == 0:
-        torch.save(player.policy.state_dict(), "./train_weights/"+str(highest_running_winrate)+"_winrate_at_"+str(episode_number)+"_episodes_"+run_title+".pth")
+    win_rates.append((episode_number, frames_seen, avg_win_rate_100_eps))
 
-        df1 = pd.DataFrame(perf_plotting)
-        df1.to_csv("./plot_data/"+run_title+str(episode_number)+"_perf_plotting.csv")
+    if episode_number % save_every == 0:
+        df1 = pd.DataFrame(win_rates)
+        df1.to_csv(plot_data_path + str(episode_number) + "_win_rates.csv")
 
-        df2 = pd.DataFrame(game_length_plotting)
-        df2.to_csv("./plot_data/"+run_title+str(episode_number)+"_game_length_plotting.csv")
+    print(
+        "Episode:", str(episode_number), "Overall WR:", str(wins / (episode_number + 1)), "Wins:", wins,
+        "steps:", str(timesteps), "frames seen:", frames_seen, "highest winrate:",
+        highest_running_winrate, "100 episode average winrate:", avg_win_rate_100_eps)
 
-        df3 = pd.DataFrame(state_value_plotting)
-        df3.to_csv("./plot_data/"+run_title+str(episode_number)+"_state_value_plotting.csv")
-
-        df4 = pd.DataFrame(entropy_plotting)
-        df4.to_csv("./plot_data/"+run_title+str(episode_number)+"_entropy_plotting.csv")
-
-        df5 = pd.DataFrame(action_prob_plotting)
-        df5.to_csv("./plot_data/"+run_title+str(episode_number)+"_action_prob_plotting.csv")
-
-    print("("+run_title+") Episode over:",str(episode_number),"WR:",str(wins/(episode_number+1)),"wins:", wins, "steps", str(timesteps) ,"frames seen:", frames_seen, "action dist", action_dist, "highest winrate", highest_running_winrate, "current winrate:", run_avg, opponent.name)
-torch.save(player.policy.state_dict(), "./train_weights/"+str(highest_running_winrate)+"_winrate_at_end_"+run_title+"_.pth")
+player.save_model(model_path + str(highest_running_winrate) + "_winrate_at_end.mdl")
