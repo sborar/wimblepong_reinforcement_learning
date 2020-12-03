@@ -1,5 +1,5 @@
 # Wimblepong reinforcement learning
-A3C approach\
+A3C approach. 
 To train, run train.py\ 
 To load existing models while training, use --load_model_path to pass model path argument to train.py\
 Currently trained model provide 90+ win rate against simple AI\
