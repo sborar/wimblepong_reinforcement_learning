@@ -32,7 +32,7 @@ episodes = 1000
 player = Agent()
 
 env.set_names("Policy gradient")
-player.load_model(path='train_weights/0.778_winrateGILE Coef.pth')
+player.load_model(path='model.mdl')
 
 # Housekeeping
 states = []
