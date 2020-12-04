@@ -9,7 +9,7 @@ import gym
 import numpy as np
 import argparse
 import wimblepong
-from bn_agent import Agent
+from agent import Agent
 
 
 parser = argparse.ArgumentParser()
@@ -29,10 +29,10 @@ env.unwrapped.fps = args.fps
 episodes = 1000
 
 # Define the player
-player = Agent(env, player_id=1)
+player = Agent()
 
 env.set_names("Policy gradient")
-player.load_model(path='train_weights/0.745_winratetitle.pth')
+player.load_model(path='train_weights/0.778_winrateGILE Coef.pth')
 
 # Housekeeping
 states = []
