@@ -8,7 +8,7 @@ from agent47_utils import discount_rewards
 
 class Agent(object):
     def __init__(self):
-        self.name = 'Agent 47'
+        self.name = 'Agent47'
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.policy = Policy().to(self.device)
         self.previous_frame = None
