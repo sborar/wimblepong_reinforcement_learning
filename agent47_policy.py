@@ -49,12 +49,6 @@ class Policy(torch.nn.Module):
         self.fc2_probs = torch.nn.Linear(256, 3)
         self.fc2_value = torch.nn.Linear(256, 1)
 
-    def init_weights(self):
-        for m in self.modules():
-            if type(m) is torch.nn.Linear:
-                torch.nn.init.normal_(m.weight)
-                torch.nn.init.zeros_(m.bias)
-
     def forward(self, inputs):
         x = F.relu(self.bn1(self.conv1(inputs / 255.0)))
         x = F.relu(self.bn2(self.conv2(x)))
