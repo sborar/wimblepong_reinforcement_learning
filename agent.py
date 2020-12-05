@@ -1,3 +1,14 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# =============================================================================
+# Created By  : Sheetal Borar and Hossein Firooz
+# Created Date: 18 Nov 2020
+# =============================================================================
+"""The file contains the agent used for playing Pong with Pixels"""
+# =============================================================================
+# Imports
+# =============================================================================
+
 import numpy as np
 import torch
 import torch.nn as nn

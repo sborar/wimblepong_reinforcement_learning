@@ -1,8 +1,15 @@
-import numpy as np
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# =============================================================================
+# Created By  : Sheetal Borar and Hossein Firooz
+# Created Date: 18 Nov 2020
+# =============================================================================
+"""The file contains the utility functions"""
+# =============================================================================
+# Imports
+# =============================================================================
+
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
-from torch.distributions import Categorical
 
 
 def discount_rewards(r, gamma):
@@ -12,4 +19,3 @@ def discount_rewards(r, gamma):
         running_add = running_add * gamma + r[t]
         discounted_r[t] = running_add
     return discounted_r
-

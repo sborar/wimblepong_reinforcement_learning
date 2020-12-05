@@ -1,3 +1,14 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# =============================================================================
+# Created By  : Sheetal Borar and Hossein Firooz
+# Created Date: 18 Nov 2020
+# =============================================================================
+"""The file contains the training code used to train the agent"""
+# =============================================================================
+# Imports
+# =============================================================================
+
 import argparse
 import gym
 import numpy as np
