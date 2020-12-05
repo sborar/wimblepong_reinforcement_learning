@@ -42,10 +42,13 @@ class Agent(object):
         torch.save(self.policy.state_dict(), path)
 
     def preprocessing(self, state):
+        # taking mean across colour channel to make the image grayscale
+        # reducing image size
         state = state[::2, ::2].mean(axis=-1)
         state = np.expand_dims(state, axis=-1)
         if self.previous_frame is None:
             self.previous_frame = state
+        # stacking previous frame and the current frame
         stacked_states = np.concatenate((self.previous_frame, state), axis=-1)
         stacked_states = torch.from_numpy(stacked_states).float().unsqueeze(0)
         stacked_states = stacked_states.transpose(1, 3)

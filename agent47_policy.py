@@ -7,14 +7,41 @@ from torch.distributions import Categorical
 class Policy(torch.nn.Module):
     def __init__(self):
         super(Policy, self).__init__()
-        self.conv1 = nn.Conv2d(2, 32, 8, stride=4)
+        h, w = 100, 100
+
+        self.conv1 = nn.Conv2d(in_channels=2,
+                               out_channels=32,
+                               kernel_size=8,
+                               stride=4)
         self.bn1 = nn.BatchNorm2d(32)
-        self.conv2 = nn.Conv2d(32, 64, 4, stride=2)
+        self.conv2 = nn.Conv2d(in_channels=32,
+                               out_channels=64,
+                               kernel_size=4,
+                               stride=2)
         self.bn2 = nn.BatchNorm2d(64)
-        self.conv3 = nn.Conv2d(64, 32, 3, stride=1)
+        self.conv3 = nn.Conv2d(in_channels=64,
+                               out_channels=32,
+                               kernel_size=3,
+                               stride=1)
         self.bn3 = nn.BatchNorm2d(32)
 
-        self.linear1 = nn.Linear(32 * 9 * 9, 512)
+        def conv2d_size_out(size, kernel_size, stride):
+            return (size - (kernel_size - 1) - 1) // stride + 1
+
+        def output_size(w, h):
+            convw = conv2d_size_out(w, 8, 4)
+            convw = conv2d_size_out(convw, 4, 2)
+            convw = conv2d_size_out(convw, 3, 1)
+
+            convh = conv2d_size_out(h, 8, 4)
+            convh = conv2d_size_out(convh, 4, 2)
+            convh = conv2d_size_out(convh, 3, 1)
+
+            return convw * convh * 32
+
+        linear_input_size = output_size(w, h)
+
+        self.linear1 = nn.Linear(linear_input_size, 512)
 
         self.fc1_actor = torch.nn.Linear(512, 256)
         self.fc1_critic = torch.nn.Linear(512, 256)
