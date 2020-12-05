@@ -1,13 +1,14 @@
 import numpy as np
 import torch
 import torch.nn as nn
-from agent47_utils import discount_rewards
+
 from agent47_policy import Policy
+from agent47_utils import discount_rewards
 
 
 class Agent(object):
     def __init__(self):
-        self.name = 'Batch-norm'
+        self.name = 'Agent 47'
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.policy = Policy().to(self.device)
         self.previous_frame = None
@@ -29,7 +30,7 @@ class Agent(object):
     def set_name(self, name):
         self.name = name
 
-    def load_model(self, path):
+    def load_model(self, path='model.mdl'):
         try:
             weights = torch.load(path, map_location=self.device)
             self.policy.load_state_dict(weights, strict=False)
@@ -94,4 +95,4 @@ class Agent(object):
         self.optimizer.step()
 
         # reduce entropy coef
-        self.entropy_coef = 0.1**((episode_number//5000)+1)
+        self.entropy_coef = 0.1 ** ((episode_number // 5000) + 1)
