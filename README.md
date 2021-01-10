@@ -1,8 +1,9 @@
 # E8125 Course Project: Wimblepong reinforcement learning
 Aalto University, Reinforcement Learning
+OpenAI GYM Pong-v0 Atari game 
 A2C approach
 
-## Developers:
+## Developers
 Sheetal Borar
 Hossein Firooz
 
