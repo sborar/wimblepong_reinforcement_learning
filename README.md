@@ -4,7 +4,7 @@ OpenAI GYM Pong-v0 Atari game
 A2C approach
 
 ## Developers
-Sheetal Borar
+Sheetal Borar<br/>
 Hossein Firooz
 
 
