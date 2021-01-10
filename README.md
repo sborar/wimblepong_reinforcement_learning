@@ -1,4 +1,11 @@
-# Wimblepong reinforcement learning
+# E8125 Course Project: Wimblepong reinforcement learning
+Aalto University, Reinforcement Learning
+
+## Developers:
+Sheetal Borar
+Hossein Firooz
+
+
 A3C approach<br/>
 To train, run train.py<br/>
 To load existing models while training, use --load_model_path to pass model path argument to train.py<br/>
