@@ -23,3 +23,5 @@ To load existing models for testing, use --load_model_path to pass model path ar
 3. Switching opponents while training to prevent overfitting<br/>
 
 Find the details in the report.
+
+Our agent got the 3rd place in the tournament phase!
