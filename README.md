@@ -15,7 +15,7 @@ Currently trained model provide 90+ win rate against simple AI<br/>
 
 ## Test
 Run test_pong_ai.py<br/>
-To load existing models for testing, use --load_model_path to pass model path argument to test_pong_ai.py<br/>
+To load existing models for testing, use --filename to pass model path argument to test_pong_ai.py<br/>
 
 ## Strategies tried
 1. Batch normalization for more stable training<br/>
